@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RiskGuard — Risk Rules</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0c10;
+    --bg2: #10131a;
+    --bg3: #181d27;
+    --bg4: #1e2535;
+    --bg5: #242c3d;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --muted2: #9ca3af;
+    --accent: #00e5a0;
+    --accent2: #00b87a;
+    --accent-dim: rgba(0,229,160,0.08);
+    --accent-dim2: rgba(0,229,160,0.15);
+    --warn: #f59e0b;
+    --warn-dim: rgba(245,158,11,0.1);
+    --danger: #ef4444;
+    --danger-dim: rgba(239,68,68,0.1);
+    --blue: #3b82f6;
+    --blue-dim: rgba(59,130,246,0.1);
+    --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.1);
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-body: 'Inter', sans-serif;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,160,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,160,0.015) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .shell { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 0;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+  }
+  .logo { padding: 0 24px 28px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  .logo-mark { font-family: var(--font-head); font-weight: 800; font-size: 20px; letter-spacing: -0.5px; color: var(--text); }
+  .logo-mark span { color: var(--accent); }
+  .logo-sub { font-family: var(--font-mono); font-size: 10px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px; }
+  .nav-section { padding: 0 12px; margin-bottom: 6px; }
+  .nav-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); padding: 0 12px; margin-bottom: 4px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--radius-sm); font-size: 13.5px; font-weight: 400; color: var(--muted2); cursor: pointer; transition: all 0.15s; text-decoration: none; }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: var(--accent-dim2); color: var(--accent); font-weight: 500; }
+  .nav-item .icon { font-size: 15px; width: 18px; text-align: center; }
+  .nav-badge { margin-left: auto; background: var(--danger); color: white; font-family: var(--font-mono); font-size: 9px; font-weight: 500; padding: 2px 6px; border-radius: 10px; }
+  .sidebar-footer { margin-top: auto; padding: 16px 12px; border-top: 1px solid var(--border); }
+  .user-card { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--radius-sm); cursor: pointer; transition: background 0.15s; }
+  .user-card:hover { background: var(--bg3); }
+  .avatar { width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent2), var(--blue)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-head); font-weight: 700; font-size: 12px; color: var(--bg); flex-shrink: 0; }
+  .user-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .user-plan { font-family: var(--font-mono); font-size: 10px; color: var(--accent); }
+
+  /* ── Main ── */
+  .main { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 28px; border-bottom: 1px solid var(--border); background: var(--bg); position: sticky; top: 0; z-index: 50; }
+  .topbar-left { display: flex; flex-direction: column; gap: 2px; }
+  .page-title { font-family: var(--font-head); font-weight: 700; font-size: 20px; letter-spacing: -0.3px; }
+  .page-sub { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 18px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+  }
+  .btn-ghost { background: var(--bg3); color: var(--muted2); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--bg4); color: var(--text); border-color: var(--border2); }
+  .btn-primary { background: var(--accent); color: var(--bg); }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-danger { background: var(--danger-dim); color: var(--danger); border: 1px solid rgba(239,68,68,0.2); }
+  .btn-danger:hover { background: rgba(239,68,68,0.2); }
+
+  .status-pill { display: flex; align-items: center; gap: 6px; background: var(--accent-dim2); border: 1px solid rgba(0,229,160,0.25); border-radius: 20px; padding: 6px 14px; font-family: var(--font-mono); font-size: 11px; color: var(--accent); }
+  .status-dot { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.85)} }
+
+  /* ── Content layout ── */
+  .content { padding: 28px; display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
+
+  /* ── Section ── */
+  .rules-col { display: flex; flex-direction: column; gap: 16px; }
+
+  .section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    animation: fadeUp 0.4s ease both;
+  }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  .section:nth-child(1){animation-delay:0.05s}
+  .section:nth-child(2){animation-delay:0.1s}
+  .section:nth-child(3){animation-delay:0.15s}
+  .section:nth-child(4){animation-delay:0.2s}
+  .section:nth-child(5){animation-delay:0.25s}
+
+  .section-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+  .section-header:hover { background: var(--bg3); }
+  .section-icon {
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .section-title { font-family: var(--font-head); font-size: 14px; font-weight: 600; flex: 1; }
+  .section-desc { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .section-chevron { color: var(--muted); font-size: 14px; transition: transform 0.2s; }
+  .section.collapsed .section-chevron { transform: rotate(-90deg); }
+  .section-body { padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+  .section.collapsed .section-body { display: none; }
+
+  /* ── Toggle ── */
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--bg3);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+  .toggle-info { display: flex; flex-direction: column; gap: 3px; }
+  .toggle-label { font-size: 13px; font-weight: 500; color: var(--text); }
+  .toggle-hint { font-size: 12px; color: var(--muted); }
+
+  .toggle-switch {
+    position: relative;
+    width: 44px; height: 24px;
+    flex-shrink: 0;
+  }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .toggle-track {
+    position: absolute; inset: 0;
+    background: var(--bg5);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .toggle-track::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 16px; height: 16px;
+    background: var(--muted);
+    border-radius: 50%;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .toggle-switch input:checked + .toggle-track { background: var(--accent-dim2); border-color: rgba(0,229,160,0.4); }
+  .toggle-switch input:checked + .toggle-track::after { transform: translateX(20px); background: var(--accent); }
+
+  /* ── Rule row ── */
+  .rule-row {
+    display: flex; flex-direction: column; gap: 10px;
+    padding: 14px 16px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition: border-color 0.2s;
+  }
+  .rule-row:hover { border-color: var(--border2); }
+  .rule-row.disabled { opacity: 0.45; pointer-events: none; }
+
+  .rule-row-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .rule-row-label { font-size: 13px; font-weight: 500; color: var(--text); }
+  .rule-row-hint { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .rule-row-value {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--accent);
+    white-space: nowrap;
+    min-width: 60px;
+    text-align: right;
+  }
+
+  /* Slider */
+  .slider-wrap { display: flex; align-items: center; gap: 10px; }
+  .slider {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+    background: var(--bg5);
+  }
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid var(--bg2);
+    box-shadow: 0 0 0 1px rgba(0,229,160,0.3);
+    transition: transform 0.15s;
+  }
+  .slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+  .slider.warn::-webkit-slider-thumb { background: var(--warn); box-shadow: 0 0 0 1px rgba(245,158,11,0.3); }
+  .slider.danger::-webkit-slider-thumb { background: var(--danger); box-shadow: 0 0 0 1px rgba(239,68,68,0.3); }
+  .slider-min, .slider-max { font-family: var(--font-mono); font-size: 10px; color: var(--muted); white-space: nowrap; }
+
+  /* Number input */
+  .num-input-wrap { display: flex; align-items: center; gap: 0; }
+  .num-btn {
+    width: 30px; height: 30px;
+    background: var(--bg5);
+    border: 1px solid var(--border2);
+    color: var(--muted2);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .num-btn:first-child { border-radius: 6px 0 0 6px; }
+  .num-btn:last-child { border-radius: 0 6px 6px 0; }
+  .num-btn:hover { background: var(--bg4); color: var(--accent); }
+  .num-display {
+    width: 52px; height: 30px;
+    background: var(--bg4);
+    border-top: 1px solid var(--border2);
+    border-bottom: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent);
+  }
+
+  /* Time picker */
+  .time-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .time-field { display: flex; flex-direction: column; gap: 5px; }
+  .time-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+  .time-select {
+    background: var(--bg4);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .time-select:focus { border-color: var(--accent); }
+
+  /* Checkbox group */
+  .check-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .check-item { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .check-box {
+    width: 18px; height: 18px;
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    background: var(--bg4);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s;
+    font-size: 10px;
+    color: transparent;
+  }
+  .check-item input { display: none; }
+  .check-item input:checked + .check-box { background: var(--accent-dim2); border-color: rgba(0,229,160,0.4); color: var(--accent); }
+  .check-item-label { font-family: var(--font-mono); font-size: 12px; color: var(--muted2); }
+
+  /* Cooldown options */
+  .option-grid { display: flex; flex-direction: column; gap: 6px; }
+  .option-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .option-item:hover { border-color: var(--border2); }
+  .option-item.selected { background: var(--accent-dim); border-color: rgba(0,229,160,0.3); }
+  .option-item.selected.warn { background: var(--warn-dim); border-color: rgba(245,158,11,0.3); }
+  .option-item.selected.danger { background: var(--danger-dim); border-color: rgba(239,68,68,0.3); }
+  .option-radio {
+    width: 16px; height: 16px;
+    border: 1.5px solid var(--muted);
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .option-item.selected .option-radio { border-color: var(--accent); }
+  .option-item.selected.warn .option-radio { border-color: var(--warn); }
+  .option-item.selected.danger .option-radio { border-color: var(--danger); }
+  .option-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .option-item.selected .option-dot { opacity: 1; }
+  .option-item.selected.warn .option-dot { background: var(--warn); }
+  .option-item.selected.danger .option-dot { background: var(--danger); }
+  .option-text { flex: 1; font-size: 13px; color: var(--text); }
+  .option-sub { font-size: 11px; color: var(--muted); }
+  .option-tag { font-family: var(--font-mono); font-size: 10px; padding: 2px 8px; border-radius: 10px; }
+  .option-tag.green { background: var(--accent-dim2); color: var(--accent); }
+  .option-tag.warn { background: var(--warn-dim); color: var(--warn); }
+  .option-tag.red { background: var(--danger-dim); color: var(--danger); }
+
+  /* ── Sidebar panel ── */
+  .sidebar-panel { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 86px; }
+
+  .panel-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    animation: fadeUp 0.4s ease 0.3s both;
+  }
+  .panel-header { padding: 14px 18px; border-bottom: 1px solid var(--border); }
+  .panel-title { font-family: var(--font-head); font-size: 13px; font-weight: 600; }
+  .panel-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+
+  /* Live preview */
+  .preview-item { display: flex; align-items: center; gap: 8px; }
+  .preview-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .preview-name { font-size: 12px; color: var(--muted2); flex: 1; }
+  .preview-val { font-family: var(--font-mono); font-size: 12px; }
+  .preview-val.green { color: var(--accent); }
+  .preview-val.warn { color: var(--warn); }
+  .preview-val.danger { color: var(--danger); }
+  .preview-val.blue { color: var(--blue); }
+  .preview-divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+  /* Risk score preview */
+  .score-display {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 12px 0 4px;
+    gap: 6px;
+  }
+  .score-ring {
+    width: 80px; height: 80px;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .score-ring svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+  .score-ring-num {
+    font-family: var(--font-head);
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--accent);
+    position: relative;
+    z-index: 1;
+  }
+  .score-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+  .score-status { font-size: 12px; color: var(--accent); }
+
+  /* Templates */
+  .template-list { display: flex; flex-direction: column; gap: 6px; }
+  .template-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .template-item:hover { border-color: var(--border2); background: var(--bg4); }
+  .template-icon { font-size: 16px; flex-shrink: 0; }
+  .template-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .template-sub { font-size: 11px; color: var(--muted); }
+  .template-arrow { margin-left: auto; color: var(--muted); font-size: 13px; }
+
+  /* Save bar */
+  .save-bar {
+    position: fixed;
+    bottom: 0; left: 220px; right: 0;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    padding: 14px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    z-index: 200;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+  .save-bar-info { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted2); }
+  .unsaved-dot { width: 7px; height: 7px; background: var(--warn); border-radius: 50%; animation: pulse 2s infinite; }
+  .save-bar-actions { display: flex; gap: 10px; }
+
+  /* Danger zone */
+  .danger-zone {
+    border: 1px solid rgba(239,68,68,0.2);
+    border-radius: var(--radius);
+    background: var(--danger-dim);
+    padding: 16px 20px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .danger-zone-text { flex: 1; }
+  .danger-zone-title { font-family: var(--font-head); font-size: 13px; font-weight: 600; color: var(--danger); }
+  .danger-zone-desc { font-size: 12px; color: var(--muted2); margin-top: 3px; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 80px; right: 28px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius-sm);
+    padding: 12px 18px;
+    font-size: 13px;
+    color: var(--text);
+    display: flex; align-items: center; gap: 10px;
+    z-index: 999;
+    opacity: 0; transform: translateX(20px);
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateX(0); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">Risk<span>Guard</span></div>
+      <div class="logo-sub">MT5 Risk Manager</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Overview</div>
+      <a class="nav-item" href="riskguard-dashboard.html">
+        <span class="icon">⬡</span> Dashboard
+      </a>
+      <a class="nav-item" href="#">
+        <span class="icon">◈</span> Live Trades
+        <span class="nav-badge">3</span>
+      </a>
+    </div>
+    <div class="nav-section" style="margin-top:12px">
+      <div class="nav-label">Risk</div>
+      <a class="nav-item active" href="#">
+        <span class="icon">⊟</span> Risk Rules
+      </a>
+      <a class="nav-item" href="#">
+        <span class="icon">⊞</span> Enforcement
+      </a>
+      <a class="nav-item" href="#">
+        <span class="icon">◎</span> Alerts
+        <span class="nav-badge">2</span>
+      </a>
+    </div>
+    <div class="nav-section" style="margin-top:12px">
+      <div class="nav-label">Insights</div>
+      <a class="nav-item" href="#">
+        <span class="icon">≋</span> Trade Journal
+      </a>
+      <a class="nav-item" href="#">
+        <span class="icon">◷</span> Analytics
+      </a>
+      <a class="nav-item" href="#">
+        <span class="icon">⊕</span> Psychology
+      </a>
+    </div>
+    <div class="nav-section" style="margin-top:12px">
+      <div class="nav-label">Account</div>
+      <a class="nav-item" href="#">
+        <span class="icon">⊙</span> MT5 Connection
+      </a>
+      <a class="nav-item" href="#">
+        <span class="icon">◧</span> Settings
+      </a>
+    </div>
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="avatar">AO</div>
+        <div>
+          <div class="user-name">Ade Okafor</div>
+          <div class="user-plan">PRO PLAN</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="page-title">Risk Rules</div>
+        <div class="page-sub">Configure your trading discipline parameters</div>
+      </div>
+      <div class="topbar-right">
+        <div class="status-pill">
+          <div class="status-dot"></div>
+          Rules Active
+        </div>
+        <button class="btn btn-ghost" onclick="resetAll()">↺ Reset defaults</button>
+        <button class="btn btn-primary" onclick="saveRules()">✓ Save rules</button>
+      </div>
+    </div>
+
+    <!-- CONTENT GRID -->
+    <div class="content">
+
+      <!-- LEFT: Rules -->
+      <div class="rules-col">
+
+        <!-- 1. Trade Limits -->
+        <div class="section" id="sec-limits">
+          <div class="section-header" onclick="toggleSection('sec-limits')">
+            <div class="section-icon" style="background:var(--accent-dim2);color:var(--accent)">📊</div>
+            <div>
+              <div class="section-title">Trade limits</div>
+              <div class="section-desc">Control how many trades you can take</div>
+            </div>
+            <div class="section-chevron">▾</div>
+          </div>
+          <div class="section-body">
+
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="toggle-label">Enable trade limit enforcement</div>
+                <div class="toggle-hint">Block new trades when daily limit is reached</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked onchange="markDirty()">
+                <div class="toggle-track"></div>
+              </label>
+            </div>
+
+            <div class="rule-row">
+              <div class="rule-row-top">
+                <div>
+                  <div class="rule-row-label">Max trades per day</div>
+                  <div class="rule-row-hint">Trading is blocked once this number is reached</div>
+                </div>
+                <div class="rule-row-value" id="val-daily-trades">5</div>
+              </div>
+              <div class="slider-wrap">
+                <span class="slider-min">1</span>
+                <input type="range" class="slider" min="1" max="20" value="5" oninput="updateVal('val-daily-trades', this.value, '', this)" onchange="markDirty()">
+                <span class="slider-max">20</span>
+              </div>
+            </div>
+
+            <div class="rule-row">
+              <div class="rule-row-top">
+                <div>
+                  <div class="rule-row-label">Max open trades at once</div>
+                  <div class="rule-row-hint">Limit concurrent positions</div>
+                </div>
+                <div class="num-input-wrap">
+                  <div class="num-btn" onclick="stepNum('open-trades', -1)">−</div>
+                  <div class="num-display" id="open-trades">3</div>
+                  <div class="num-btn" onclick="stepNum('open-trades', 1)">+</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="rule-row">
+              <div class="rule-row-top">
+                <div>
+                  <div class="rule-row-label">Max lot size per trade</div>
+                  <div class="rule-row-hint">Caps the maximum position size allowed</div>
+                </div>
+                <div class="rule-row-value" id="val-lot-size">0.50</div>
+              </div>
+              <div class="slider-wrap">
+                <span class="slider-min">0.01</span>
+                <input type="range" class="slider" min="1" max="100" value="50" oninput="updateLot(this)" onchange="markDirty()">
+                <span class="slider-max">5.00</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 2. Loss Limits -->
+        <div class="section" id="sec-loss">
+          <div class="section-header" onclick="toggleSection('sec-loss')">
+            <div class="section-icon" style="background:var(--danger-dim);color:var(--danger)">📉</div>
+            <div>
+              <div class="section-title">Loss limits</div>
+              <div class="section-desc">Protect your account from drawdown</div>
+            </div>
+            <div class="section-chevron">▾</div>
+          </div>
+          <div class="section-body">
+
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="toggle-label">Enable daily loss limit</div>
+                <div class="toggle-hint">Hard stop when daily loss % is reached</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked onchange="markDirty()">
+                <div class="toggle-track"></div>
+              </label>
+            </div>
+
+            <div class="rule-row">
+              <div class="rule-row-top">
+                <div>
+                  <div class="rule-row-label">Daily loss limit</div>
+                  <div class="rule-row-hint">Stop trading when account drops by this % in a day</div>
+                </div>
+                <div class="rule-row-value" id="val-daily-loss" style="color:var(--danger)">2.0%</div>
+              </div>
+              <div class="slider-wrap">
+                <span class="slider-min">0.5%</span>
+                <input type="range" class="slider danger" min="5" max="100" value="20" oninput="updatePct('val-daily-loss', this.value / 10, this)" onchange="markDirty()">
+                <span class="slider-max">10%</span>
+              </div>
+            </div>
+
+            <div class="rule-row">
+              <div class="rule-row-top">
+                <div>
+                  <div class="rule-row-label">Weekly loss limit</div>
+                  <div class="rule-row-hint">Disables trading for the rest of the week</div>
+                </div>
+                <div class="rule-row-value" id="val-weekly-loss" style="color:var(--warn)">5.0%</div>
+              </div>
+              <div class="slider-wrap">
+                <span class="slider-min">1%</span>
+                <input type="range" class="slider warn" min="10" max="200" value="50" oninput="updatePct('val-weekly-loss', this.value / 10, this)" onchange="markDirty()">
+                <span class="slider-max">20%</span>
+              </div>
+            </div>
+
+            <div class="rule-row">
+              <div class="rule-row-top">
+                <div>
+                  <div class="rule-row-label">Monthly loss limit</div>
+                  <div class="rule-row-hint">Locks account for the rest of the month</div>
+                </div>
+                <div class="rule-row-value" id="val-monthly-loss" style="color:var(--muted2)">10.0%</div>
+              </div>
+              <div class="slider-wrap">
+                <span class="slider-min">2%</span>
+                <input type="range" class="slider" min="20" max="500" value="100" oninput="updatePct('val-monthly-loss', this.value / 10, this)" onchange="markDirty()">
+                <span class="slider-max">50%</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 3. Session Times -->
+        <div class="section" id="sec-session">
+          <div class="section-header" onclick="toggleSection('sec-session')">
+            <div class="section-icon" style="background:var(--blue-dim);color:var(--blue)">🕐</div>
+            <div>
+              <div class="section-title">Allowed trading sessions</div>
+              <div class="section-desc">Only allow trades during specific market hours</div>
+            </div>
+            <div class="section-chevron">▾</div>
+          </div>
+          <div class="section-body">
+
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="toggle-label">Enable session restrictions</div>
+                <div class="toggle-hint">Block trades outside allowed hours</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked onchange="markDirty()">
+                <div class="toggle-track"></div>
+              </label>
+            </div>
+
+            <div class="rule-row">
+              <div class="rule-row-label" style="margin-bottom:10px">Allowed trading days</div>
+              <div class="check-grid">
+                <label class="check-item">
+                  <input type="checkbox" onchange="markDirty()">
+                  <div class="check-box">✓</div>
+                  <span class="check-item-label">Mon</span>
+                </label>
+                <label class="check-item">
+                  <input type="checkbox" checked onchange="markDirty()">
+                  <div class="check-box">✓</div>
+                  <span class="check-item-label">Tue</span>
+                </label>
+                <label class="check-item">
+                  <input type="checkbox" checked onchange="markDirty()">
+                  <div class="check-box">✓</div>
+                  <span class="check-item-label">Wed</span>
+                </label>
+                <label class="check-item">
+                  <input type="checkbox" checked onchange="markDirty()">
+                  <div class="check-box">✓</div>
+                  <span class="check-item-label">Thu</span>
+                </label>
+                <label class="check-item">
+                  <input type="checkbox" checked onchange="markDirty()">
+                  <div class="check-box">✓</div>
+                  <span class="check-item-label">Fri</span>
+                </label>
+                <label class="check-item">
+                  <input type="checkbox" onchange="markDirty()">
+                  <div class="check-box">✓</div>
+                  <span class="check-item-label">Sat</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="rule-row">
+              <div class="rule-row-label" style="margin-bottom:10px">Allowed time window (UTC)</div>
+              <div class="time-grid">
+                <div class="time-field">
+                  <div class="time-label">Session start</div>
+                  <select class="time-select" onchange="markDirty()">
+                    <option>06:00 — Pre-London</option>
+                    <option selected>07:00 — London open</option>
+                    <option>08:00</option>
+                    <option>12:00 — NY open</option>
+                    <option>13:00</option>
+                  </select>
+                </div>
+                <div class="time-field">
+                  <div class="time-label">Session end</div>
+                  <select class="time-select" onchange="markDirty()">
+                    <option>12:00</option>
+                    <option>14:00</option>
+                    <option selected>16:00 — London close</option>
+                    <option>17:00</option>
+                    <option>20:00 — NY close</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 4. Cooldown & Psychology -->
+        <div class="section" id="sec-cooldown">
+          <div class="section-header" onclick="toggleSection('sec-cooldown')">
+            <div class="section-icon" style="background:var(--warn-dim);color:var(--warn)">🧠</div>
+            <div>
+              <div class="section-title">Cooldown & psychology rules</div>
+              <div class="section-desc">Protect against revenge trading and emotional decisions</div>
+            </div>
+            <div class="section-chevron">▾</div>
+          </div>
+          <div class="section-body">
+
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="toggle-label">Enable automatic cooldowns</div>
+                <div class="toggle-hint">Forced break after consecutive losses</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked onchange="markDirty()">
+                <div class="toggle-track"></div>
+              </label>
+            </div>
+
+            <div class="rule-row">
+              <div class="rule-row-top">
+                <div>
+                  <div class="rule-row-label">Trigger cooldown after</div>
+                  <div class="rule-row-hint">Number of consecutive losing trades</div>
+                </div>
+                <div class="num-input-wrap">
+                  <div class="num-btn" onclick="stepNum('loss-streak', -1)">−</div>
+                  <div class="num-display" id="loss-streak">2</div>
+                  <div class="num-btn" onclick="stepNum('loss-streak', 1)">+</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="rule-row">
+              <div class="rule-row-top">
+                <div>
+                  <div class="rule-row-label">Cooldown duration</div>
+                  <div class="rule-row-hint">How long trading is blocked after trigger</div>
+                </div>
+                <div class="rule-row-value" id="val-cooldown">30 min</div>
+              </div>
+              <div class="option-grid" id="cooldown-opts" style="margin-top:6px">
+                <div class="option-item" onclick="selectOption('cooldown-opts', this, '10 min', 'val-cooldown')">
+                  <div class="option-radio"><div class="option-dot"></div></div>
+                  <div class="option-text">10 minutes<div class="option-sub">Short reset</div></div>
+                  <span class="option-tag green">Short</span>
+                </div>
+                <div class="option-item selected" onclick="selectOption('cooldown-opts', this, '30 min', 'val-cooldown')">
+                  <div class="option-radio"><div class="option-dot"></div></div>
+                  <div class="option-text">30 minutes<div class="option-sub">Recommended</div></div>
+                  <span class="option-tag green">Default</span>
+                </div>
+                <div class="option-item warn" onclick="selectOption('cooldown-opts', this, '1 hour', 'val-cooldown')">
+                  <div class="option-radio"><div class="option-dot"></div></div>
+                  <div class="option-text">1 hour<div class="option-sub">Strict</div></div>
+                  <span class="option-tag warn">Strict</span>
+                </div>
+                <div class="option-item" onclick="selectOption('cooldown-opts', this, 'Rest of day', 'val-cooldown')">
+                  <div class="option-radio"><div class="option-dot"></div></div>
+                  <div class="option-text">Rest of day<div class="option-sub">Stop for today</div></div>
+                  <span class="option-tag red">Hard stop</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="toggle-label">Revenge trade detection</div>
+                <div class="toggle-hint">Flag trades placed within 5 min of a losing trade</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked onchange="markDirty()">
+                <div class="toggle-track"></div>
+              </label>
+            </div>
+
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="toggle-label">Require pre-session checklist</div>
+                <div class="toggle-hint">Block trading until daily checklist is completed</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" onchange="markDirty()">
+                <div class="toggle-track"></div>
+              </label>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 5. Enforcement Mode -->
+        <div class="section" id="sec-enforce">
+          <div class="section-header" onclick="toggleSection('sec-enforce')">
+            <div class="section-icon" style="background:var(--purple-dim);color:var(--purple)">⊞</div>
+            <div>
+              <div class="section-title">Enforcement mode</div>
+              <div class="section-desc">Choose how strictly rules are applied</div>
+            </div>
+            <div class="section-chevron">▾</div>
+          </div>
+          <div class="section-body">
+            <div class="option-grid" id="enforce-opts">
+              <div class="option-item" onclick="selectOption('enforce-opts', this, null, null)">
+                <div class="option-radio"><div class="option-dot"></div></div>
+                <div class="option-text">
+                  Monitor only
+                  <div class="option-sub">Track violations, no blocking. Alerts only.</div>
+                </div>
+                <span class="option-tag green">Passive</span>
+              </div>
+              <div class="option-item selected warn" onclick="selectOption('enforce-opts', this, null, null)">
+                <div class="option-radio"><div class="option-dot"></div></div>
+                <div class="option-text">
+                  Warn &amp; confirm
+                  <div class="option-sub">Show warning, require confirmation to proceed.</div>
+                </div>
+                <span class="option-tag warn">Default</span>
+              </div>
+              <div class="option-item" onclick="selectOption('enforce-opts', this, null, null)">
+                <div class="option-radio"><div class="option-dot"></div></div>
+                <div class="option-text">
+                  Hard block
+                  <div class="option-sub">Trades are rejected via MT5 EA. No override.</div>
+                </div>
+                <span class="option-tag red">Strict</span>
+              </div>
+            </div>
+
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <div class="toggle-label">Allow PIN override</div>
+                <div class="toggle-hint">Let trader bypass rules with a 4-digit PIN (logged)</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked onchange="markDirty()">
+                <div class="toggle-track"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="danger-zone">
+          <div class="danger-zone-text">
+            <div class="danger-zone-title">⚠ Reset all rules</div>
+            <div class="danger-zone-desc">This will clear all custom rules and restore factory defaults. This cannot be undone.</div>
+          </div>
+          <button class="btn btn-danger" onclick="resetAll()">Reset to defaults</button>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Sidebar panel -->
+      <div class="sidebar-panel">
+
+        <!-- Live preview -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">Live rule preview</div>
+          </div>
+          <div class="panel-body">
+            <div class="score-display">
+              <div class="score-ring">
+                <svg viewBox="0 0 80 80">
+                  <circle cx="40" cy="40" r="32" fill="none" stroke="var(--bg4)" stroke-width="7"/>
+                  <circle id="score-arc" cx="40" cy="40" r="32" fill="none" stroke="var(--accent)" stroke-width="7"
+                    stroke-dasharray="201" stroke-dashoffset="72" stroke-linecap="round"/>
+                </svg>
+                <div class="score-ring-num" id="preview-score">64</div>
+              </div>
+              <div class="score-label">Projected risk score</div>
+              <div class="score-status" id="preview-status">✓ Conservative setup</div>
+            </div>
+            <div class="preview-divider"></div>
+            <div class="preview-item">
+              <div class="preview-dot" style="background:var(--accent)"></div>
+              <div class="preview-name">Daily trade limit</div>
+              <div class="preview-val green" id="prev-trades">5 trades</div>
+            </div>
+            <div class="preview-item">
+              <div class="preview-dot" style="background:var(--danger)"></div>
+              <div class="preview-name">Daily loss cap</div>
+              <div class="preview-val danger" id="prev-loss">2.0%</div>
+            </div>
+            <div class="preview-item">
+              <div class="preview-dot" style="background:var(--warn)"></div>
+              <div class="preview-name">Cooldown trigger</div>
+              <div class="preview-val warn" id="prev-cooldown">2 losses → 30 min</div>
+            </div>
+            <div class="preview-item">
+              <div class="preview-dot" style="background:var(--blue)"></div>
+              <div class="preview-name">Session window</div>
+              <div class="preview-val blue">07:00 – 16:00</div>
+            </div>
+            <div class="preview-item">
+              <div class="preview-dot" style="background:var(--purple)"></div>
+              <div class="preview-name">Enforcement</div>
+              <div class="preview-val" style="color:var(--purple)">Warn &amp; confirm</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Templates -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div class="panel-title">Rule templates</div>
+          </div>
+          <div class="panel-body" style="padding-top:12px">
+            <div class="template-list">
+              <div class="template-item" onclick="applyTemplate('conservative')">
+                <div class="template-icon">🛡</div>
+                <div>
+                  <div class="template-name">Conservative</div>
+                  <div class="template-sub">3 trades, -1% daily, 30min cooldown</div>
+                </div>
+                <div class="template-arrow">›</div>
+              </div>
+              <div class="template-item" onclick="applyTemplate('balanced')">
+                <div class="template-icon">⚖</div>
+                <div>
+                  <div class="template-name">Balanced</div>
+                  <div class="template-sub">5 trades, -2% daily, warn mode</div>
+                </div>
+                <div class="template-arrow">›</div>
+              </div>
+              <div class="template-item" onclick="applyTemplate('prop')">
+                <div class="template-icon">🏢</div>
+                <div>
+                  <div class="template-name">Prop firm (FTMO)</div>
+                  <div class="template-sub">Matches FTMO challenge rules</div>
+                </div>
+                <div class="template-arrow">›</div>
+              </div>
+              <div class="template-item" onclick="applyTemplate('aggressive')">
+                <div class="template-icon">⚡</div>
+                <div>
+                  <div class="template-name">Aggressive</div>
+                  <div class="template-sub">10 trades, -5% daily, hard block</div>
+                </div>
+                <div class="template-arrow">›</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /content -->
+  </main>
+</div>
+
+<!-- Save bar -->
+<div class="save-bar" id="saveBar" style="display:none">
+  <div class="save-bar-info">
+    <div class="unsaved-dot"></div>
+    You have unsaved changes
+  </div>
+  <div class="save-bar-actions">
+    <button class="btn btn-ghost" onclick="discardChanges()">Discard</button>
+    <button class="btn btn-primary" onclick="saveRules()">✓ Save rules</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  let dirty = false;
+
+  function markDirty() {
+    dirty = true;
+    document.getElementById('saveBar').style.display = 'flex';
+  }
+
+  function toggleSection(id) {
+    document.getElementById(id).classList.toggle('collapsed');
+  }
+
+  function updateVal(id, val, suffix, slider) {
+    document.getElementById(id).textContent = val + suffix;
+    if (slider) updateSliderFill(slider);
+    markDirty();
+  }
+
+  function updatePct(id, val, slider) {
+    document.getElementById(id).textContent = parseFloat(val).toFixed(1) + '%';
+    if (slider) updateSliderFill(slider);
+    markDirty();
+  }
+
+  function updateLot(slider) {
+    const val = (slider.value / 100 * 5).toFixed(2);
+    document.getElementById('val-lot-size').textContent = val;
+    updateSliderFill(slider);
+    markDirty();
+  }
+
+  function updateSliderFill(slider) {
+    const pct = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+    const color = slider.classList.contains('danger') ? 'var(--danger)' :
+                  slider.classList.contains('warn') ? 'var(--warn)' : 'var(--accent)';
+    slider.style.background = `linear-gradient(90deg, ${color} ${pct}%, var(--bg5) ${pct}%)`;
+  }
+
+  function stepNum(id, delta) {
+    const el = document.getElementById(id);
+    let val = parseInt(el.textContent) + delta;
+    if (val < 1) val = 1;
+    if (val > 20) val = 20;
+    el.textContent = val;
+    markDirty();
+    // update preview for cooldown
+    if (id === 'loss-streak') {
+      const dur = document.getElementById('val-cooldown').textContent;
+      document.getElementById('prev-cooldown').textContent = val + ' losses → ' + dur;
+    }
+  }
+
+  function selectOption(groupId, el, valId, displayId) {
+    const group = document.getElementById(groupId);
+    group.querySelectorAll('.option-item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+    if (valId && displayId) {
+      document.getElementById(displayId).textContent = valId;
+      if (displayId === 'val-cooldown') {
+        const streak = document.getElementById('loss-streak').textContent;
+        document.getElementById('prev-cooldown').textContent = streak + ' losses → ' + valId;
+      }
+    }
+    markDirty();
+  }
+
+  function saveRules() {
+    dirty = false;
+    document.getElementById('saveBar').style.display = 'none';
+    showToast('✓ Rules saved and active on MT5');
+  }
+
+  function discardChanges() {
+    dirty = false;
+    document.getElementById('saveBar').style.display = 'none';
+    showToast('Changes discarded');
+  }
+
+  function resetAll() {
+    showToast('Rules reset to defaults');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  function applyTemplate(type) {
+    const templates = {
+      conservative: { trades: 3, loss: '1.0', msg: '🛡 Conservative template applied' },
+      balanced:     { trades: 5, loss: '2.0', msg: '⚖ Balanced template applied' },
+      prop:         { trades: 4, loss: '0.5', msg: '🏢 FTMO prop firm template applied' },
+      aggressive:   { trades: 10, loss: '5.0', msg: '⚡ Aggressive template applied' },
+    };
+    const t = templates[type];
+    document.getElementById('prev-trades').textContent = t.trades + ' trades';
+    document.getElementById('prev-loss').textContent = t.loss + '%';
+    markDirty();
+    showToast(t.msg);
+  }
+
+  // Init slider fills
+  document.querySelectorAll('.slider').forEach(s => updateSliderFill(s));
+
+  // Sync trade limit slider to preview
+  document.querySelectorAll('input[type=range]').forEach(s => {
+    s.addEventListener('input', () => {
+      if (s.oninput) return; // handled by inline
+    });
+  });
+
+  // Override daily trades slider to also update preview
+  const tradesSlider = document.querySelector('input[type=range][oninput*="val-daily-trades"]');
+  if (tradesSlider) {
+    const orig = tradesSlider.oninput;
+    tradesSlider.addEventListener('input', function() {
+      document.getElementById('prev-trades').textContent = this.value + ' trades';
+    });
+  }
+
+  const lossSlider = document.querySelector('input[type=range][oninput*="val-daily-loss"]');
+  if (lossSlider) {
+    lossSlider.addEventListener('input', function() {
+      const val = (this.value / 10).toFixed(1);
+      document.getElementById('prev-loss').textContent = val + '%';
+    });
+  }
+</script>
+</body>
+</html>
