@@ -798,59 +798,7 @@
         </div>
       </div>
 
-      <!-- Cooldown banner (active) -->
-      <div class="cooldown-card">
-        <div class="cooldown-icon">⏱</div>
-        <div class="cooldown-info">
-          <div class="cooldown-title">Cooldown Active — 2 consecutive losses detected</div>
-          <div class="cooldown-desc">Forced 30-minute break to prevent revenge trading. Trading resumes automatically.</div>
-        </div>
-        <div class="cooldown-timer" id="cooldownTimer">18:42</div>
-      </div>
-
-      <!-- Mid row: chart + risk meter -->
-      <div class="mid-row">
-
-        <!-- Drawdown chart -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title">Equity curve — today</div>
-            <div class="card-action">View full history →</div>
-          </div>
-          <div class="card-body">
-            <div class="chart-wrap">
-              <svg viewBox="0 0 560 140" preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.2"/>
-                    <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
-                  </linearGradient>
-                </defs>
-                <!-- Grid lines -->
-                <line x1="0" y1="30" x2="560" y2="30" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
-                <line x1="0" y1="70" x2="560" y2="70" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
-                <line x1="0" y1="110" x2="560" y2="110" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
-                <!-- Danger line -->
-                <line x1="0" y1="98" x2="560" y2="98" stroke="var(--danger)" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.4"/>
-                <text x="4" y="95" fill="var(--danger)" font-size="9" font-family="IBM Plex Mono" opacity="0.6">-2% limit</text>
-                <!-- Area fill -->
-                <path d="M0,50 L60,45 L120,55 L180,42 L220,60 L260,35 L300,70 L340,85 L380,80 L420,95 L460,88 L520,92 L560,90 L560,140 L0,140 Z"
-                      fill="url(#chartGrad)"/>
-                <!-- Line -->
-                <path d="M0,50 L60,45 L120,55 L180,42 L220,60 L260,35 L300,70 L340,85 L380,80 L420,95 L460,88 L520,92 L560,90"
-                      fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                <!-- Current dot -->
-                <circle cx="560" cy="90" r="4" fill="var(--accent)"/>
-                <circle cx="560" cy="90" r="8" fill="var(--accent)" opacity="0.2"/>
-              </svg>
-            </div>
-            <div class="chart-labels">
-              <span>09:00</span><span>10:00</span><span>11:00</span><span>12:00</span><span>13:00</span><span>14:00</span><span>Now</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Risk meter -->
+      <!-- Risk meter -->
         <div class="card">
           <div class="card-header">
             <div class="card-title">Risk status</div>
@@ -993,6 +941,50 @@
         </div>
 
       </div>
+
+      <!-- Mid row: chart + risk meter -->
+      <div class="mid-row">
+
+        <!-- Drawdown chart -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Equity curve — today</div>
+            <div class="card-action">View full history →</div>
+          </div>
+          <div class="card-body">
+            <div class="chart-wrap">
+              <svg viewBox="0 0 560 140" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.2"/>
+                    <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <!-- Grid lines -->
+                <line x1="0" y1="30" x2="560" y2="30" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                <line x1="0" y1="70" x2="560" y2="70" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                <line x1="0" y1="110" x2="560" y2="110" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+                <!-- Danger line -->
+                <line x1="0" y1="98" x2="560" y2="98" stroke="var(--danger)" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.4"/>
+                <text x="4" y="95" fill="var(--danger)" font-size="9" font-family="IBM Plex Mono" opacity="0.6">-2% limit</text>
+                <!-- Area fill -->
+                <path d="M0,50 L60,45 L120,55 L180,42 L220,60 L260,35 L300,70 L340,85 L380,80 L420,95 L460,88 L520,92 L560,90 L560,140 L0,140 Z"
+                      fill="url(#chartGrad)"/>
+                <!-- Line -->
+                <path d="M0,50 L60,45 L120,55 L180,42 L220,60 L260,35 L300,70 L340,85 L380,80 L420,95 L460,88 L520,92 L560,90"
+                      fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                <!-- Current dot -->
+                <circle cx="560" cy="90" r="4" fill="var(--accent)"/>
+                <circle cx="560" cy="90" r="8" fill="var(--accent)" opacity="0.2"/>
+              </svg>
+            </div>
+            <div class="chart-labels">
+              <span>09:00</span><span>10:00</span><span>11:00</span><span>12:00</span><span>13:00</span><span>14:00</span><span>Now</span>
+            </div>
+          </div>
+        </div>
+
+       
 
       
 
