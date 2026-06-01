@@ -907,9 +907,857 @@
       </div>
 
       <!-- Mid row: chart + risk meter -->
+      
+Conversation with Gemini
+Am a professional web designer, I want you to read this code carefully and don't make any changes unless I asked you to, if you don't understand anything you ask me if there is an improvement you tell me first, I want you to dissect the code into sections and each section you should explain how it is and what it does, give me the code exactly as it is
+
+This is a very clean, modern, and well-structured dashboard design. As a fellow designer, I can appreciate the attention to detail here—especially the use of CSS variables for consistent theming, the custom grid noise overlay, and the sleek UI elements like the inline SVGs for the drawdown chart and risk meter.
+
+As requested, I have dissected your code into logical sections without changing a single character. For each section, I’ve explained its structure and functionality. At the end, I’ve also listed a few potential improvements for you to consider before we make any actual changes.
+
+Section 1: Document Setup & CSS Variables
+This section sets up the document, imports the necessary fonts (Syne, IBM Plex Mono, Inter), and defines the global design tokens using CSS custom properties (:root).
+
+What it does: It establishes the color palette (dark theme with specific accent colors for warnings, dangers, and success states), typography scales, and structural values like border radii. The body::before pseudo-element generates a subtle, modern grid noise overlay for visual texture.
+
+HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RiskGuard — Trader Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0a0c10;
+    --bg2: #10131a;
+    --bg3: #181d27;
+    --bg4: #1e2535;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --muted2: #9ca3af;
+    --accent: #00e5a0;
+    --accent2: #00b87a;
+    --accent-dim: rgba(0,229,160,0.08);
+    --accent-dim2: rgba(0,229,160,0.15);
+    --warn: #f59e0b;
+    --warn-dim: rgba(245,158,11,0.1);
+    --danger: #ef4444;
+    --danger-dim: rgba(239,68,68,0.1);
+    --blue: #3b82f6;
+    --blue-dim: rgba(59,130,246,0.1);
+    --purple: #a78bfa;
+    --purple-dim: rgba(167,139,250,0.1);
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+    --font-body: 'Inter', sans-serif;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid noise overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,160,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,160,0.015) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+Section 2: CSS - Core Layout & Sidebar
+This section handles the macro-layout (.shell) and the complete styling for the fixed left-hand navigation menu.
+
+What it does: It creates a flexbox wrapper for the entire app. The .sidebar is fixed to the left with a width of 220px. It styles the logo, navigation links (including hover/active states), notification badges, and the user profile card at the bottom.
+
+CSS
+  /* Layout */
+  .shell { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 0;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    padding: 0 24px 28px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+  .logo-mark {
+    font-family: var(--font-head);
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: -0.5px;
+    color: var(--text);
+  }
+  .logo-mark span { color: var(--accent); }
+  .logo-sub {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .nav-section {
+    padding: 0 12px;
+    margin-bottom: 6px;
+  }
+  .nav-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0 12px;
+    margin-bottom: 4px;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 13.5px;
+    font-weight: 400;
+    color: var(--muted2);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+  }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active {
+    background: var(--accent-dim2);
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .nav-item .icon { font-size: 15px; width: 18px; text-align: center; }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--danger);
+    color: white;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 500;
+    padding: 2px 6px;
+    border-radius: 10px;
+  }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px 12px;
+    border-top: 1px solid var(--border);
+  }
+  .user-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .user-card:hover { background: var(--bg3); }
+  .avatar {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--accent2), var(--blue));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-head);
+    font-weight: 700; font-size: 12px;
+    color: var(--bg);
+    flex-shrink: 0;
+  }
+  .user-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .user-plan {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--accent);
+  }
+Section 3: CSS - Main Content & Dashboard Components
+This is the bulk of your styling. It governs everything to the right of the sidebar.
+
+What it does: * .main & .topbar: Pushes the content past the fixed sidebar and creates a sticky header with a pulsing status dot.
+
+.stats-row & .stat-card: Creates a 4-column CSS grid for the top metric cards. It uses pseudo-elements (::before) to create the colored top border accents.
+
+.mid-row & .bottom-row: Defines the grid layouts for the chart/meter section and the rules/trades section.
+
+Custom UI Elements: Styles the custom SVG charts (.chart-wrap, .risk-meter-wrap), the trade tables (.trade-table), the heatmap grid (.heatmap-wrap), and the cooldown timer banner (.cooldown-card). It also handles custom scrollbar styling.
+
+CSS
+  /* Main content */
+  .main {
+    margin-left: 220px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* Topbar */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    position: sticky; top: 0; z-index: 50;
+  }
+  .topbar-left { display: flex; flex-direction: column; gap: 2px; }
+  .page-title {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: -0.3px;
+  }
+  .page-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+
+  .status-pill {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--accent-dim2);
+    border: 1px solid rgba(0,229,160,0.25);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+  }
+  .status-dot {
+    width: 7px; height: 7px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+
+  .icon-btn {
+    width: 36px; height: 36px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 15px;
+    color: var(--muted2);
+    transition: all 0.15s;
+    position: relative;
+  }
+  .icon-btn:hover { background: var(--bg4); color: var(--text); }
+  .notif-dot {
+    position: absolute; top: 6px; right: 6px;
+    width: 6px; height: 6px;
+    background: var(--danger);
+    border-radius: 50%;
+    border: 1.5px solid var(--bg);
+  }
+
+  /* Content area */
+  .content { padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; }
+
+  /* Alert banner */
+  .alert-banner {
+    background: var(--warn-dim);
+    border: 1px solid rgba(245,158,11,0.25);
+    border-left: 3px solid var(--warn);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13.5px;
+    color: var(--warn);
+    animation: slideDown 0.4s ease;
+  }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .alert-banner strong { font-weight: 600; }
+  .alert-banner .alert-close {
+    margin-left: auto;
+    cursor: pointer;
+    opacity: 0.6;
+    font-size: 16px;
+    transition: opacity 0.15s;
+  }
+  .alert-banner .alert-close:hover { opacity: 1; }
+
+  /* Stats row */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+    cursor: default;
+  }
+  .stat-card:hover { border-color: var(--border2); }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .stat-card.green::before { background: var(--accent); }
+  .stat-card.warn::before { background: var(--warn); }
+  .stat-card.danger::before { background: var(--danger); }
+  .stat-card.blue::before { background: var(--blue); }
+
+  .stat-header { display: flex; align-items: center; justify-content: space-between; }
+  .stat-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .stat-icon {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+  }
+  .stat-icon.green { background: var(--accent-dim2); color: var(--accent); }
+  .stat-icon.warn { background: var(--warn-dim); color: var(--warn); }
+  .stat-icon.danger { background: var(--danger-dim); color: var(--danger); }
+  .stat-icon.blue { background: var(--blue-dim); color: var(--blue); }
+
+  .stat-value {
+    font-family: var(--font-head);
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+  .stat-value.green { color: var(--accent); }
+  .stat-value.warn { color: var(--warn); }
+  .stat-value.danger { color: var(--danger); }
+  .stat-value.blue { color: var(--blue); }
+
+  .stat-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .stat-bar-track {
+    height: 4px;
+    background: var(--bg4);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .stat-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+  .stat-bar-fill.green { background: var(--accent); }
+  .stat-bar-fill.warn { background: var(--warn); }
+  .stat-bar-fill.danger { background: var(--danger); }
+  .stat-bar-fill.blue { background: var(--blue); }
+
+  /* Mid row */
+  .mid-row { display: grid; grid-template-columns: 1fr 340px; gap: 14px; }
+
+  /* Card base */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-title {
+    font-family: var(--font-head);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+  }
+  .card-body { padding: 20px; }
+  .card-action {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .card-action:hover { opacity: 0.7; }
+
+  /* Drawdown chart */
+  .chart-wrap { width: 100%; height: 160px; position: relative; }
+  .chart-wrap svg { width: 100%; height: 100%; }
+  .chart-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* Risk meter */
+  .risk-meter-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 20px 16px;
+  }
+  .meter-svg { width: 180px; height: 100px; }
+  .meter-labels {
+    display: flex;
+    justify-content: space-between;
+    width: 180px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .meter-value-wrap { text-align: center; margin-top: 10px; }
+  .meter-value {
+    font-family: var(--font-head);
+    font-size: 38px;
+    font-weight: 800;
+    letter-spacing: -2px;
+    color: var(--warn);
+  }
+  .meter-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .meter-status {
+    margin-top: 12px;
+    background: var(--warn-dim);
+    border: 1px solid rgba(245,158,11,0.25);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--warn);
+  }
+
+  /* Rule items */
+  .rules-list { display: flex; flex-direction: column; gap: 0; }
+  .rule-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .rule-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .rule-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .rule-dot.ok { background: var(--accent); }
+  .rule-dot.warn { background: var(--warn); }
+  .rule-dot.block { background: var(--danger); }
+
+  .rule-name { font-size: 13px; color: var(--text); flex: 1; }
+  .rule-val {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted2);
+  }
+  .rule-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+  .rule-badge.ok { background: var(--accent-dim2); color: var(--accent); }
+  .rule-badge.warn { background: var(--warn-dim); color: var(--warn); }
+  .rule-badge.block { background: var(--danger-dim); color: var(--danger); }
+
+  /* Bottom row */
+  .bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  /* Trade log */
+  .trade-table { width: 100%; border-collapse: collapse; }
+  .trade-table th {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: left;
+    padding: 0 0 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .trade-table td {
+    padding: 10px 0;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .trade-table tr:last-child td { border-bottom: none; }
+
+  .pair-tag {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .trade-type {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 4px;
+  }
+  .trade-type.buy { background: var(--accent-dim2); color: var(--accent); }
+  .trade-type.sell { background: var(--danger-dim); color: var(--danger); }
+
+  .pnl-pos { color: var(--accent); font-family: var(--font-mono); font-size: 13px; }
+  .pnl-neg { color: var(--danger); font-family: var(--font-mono); font-size: 13px; }
+  .trade-time { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+  .rule-flag {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--warn);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* Session heatmap */
+  .heatmap-wrap { display: flex; flex-direction: column; gap: 10px; }
+  .heatmap-row { display: flex; align-items: center; gap: 8px; }
+  .heatmap-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    width: 32px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .heatmap-cells { display: flex; gap: 3px; flex: 1; }
+  .heatmap-cell {
+    flex: 1;
+    height: 22px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    position: relative;
+  }
+  .heatmap-cell:hover { opacity: 0.75; }
+  .heatmap-hours {
+    display: flex;
+    gap: 3px;
+    padding-left: 40px;
+    margin-bottom: 4px;
+  }
+  .heatmap-hour-label {
+    flex: 1;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--muted);
+    text-align: center;
+  }
+  .heatmap-legend {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+  }
+  .legend-gradient {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--bg4), var(--danger));
+  }
+
+  /* Cooldown timer */
+  .cooldown-card {
+    background: var(--danger-dim);
+    border: 1px solid rgba(239,68,68,0.2);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .cooldown-icon {
+    width: 44px; height: 44px;
+    background: rgba(239,68,68,0.15);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .cooldown-info { flex: 1; }
+  .cooldown-title {
+    font-family: var(--font-head);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--danger);
+    margin-bottom: 2px;
+  }
+  .cooldown-desc { font-size: 12px; color: var(--muted2); }
+  .cooldown-timer {
+    font-family: var(--font-mono);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--danger);
+    letter-spacing: -0.5px;
+  }
+
+  /* Bottom utility row */
+  .utility-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+  .util-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .util-card:hover { border-color: var(--border2); background: var(--bg3); }
+  .util-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .util-title { font-family: var(--font-head); font-size: 13px; font-weight: 600; }
+  .util-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .util-arrow { margin-left: auto; color: var(--muted); font-size: 16px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+Section 4: HTML - Sidebar
+This is the semantic HTML structure for your left-hand navigation.
+
+What it does: It groups navigation links into logical categories (Overview, Risk, Insights, Account) using div elements, utilizes simple unicode characters for icons, and includes dynamic elements like notification badges and a user profile snippet at the bottom.
+
+HTML
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">Risk<span>Guard</span></div>
+      <div class="logo-sub">MT5 Risk Manager</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Overview</div>
+      <a class="nav-item active" href="#">
+        <span class="icon">⬡</span> Dashboard
+      </a>
+      <a class="nav-item" href="#">
+        <span class="icon">◈</span> Live Trades
+        <span class="nav-badge">3</span>
+      </a>
+    </div>
+
+    <div class="nav-section" style="margin-top:12px">
+      <div class="nav-label">Risk</div>
+      <a class="nav-item" href="#">
+        <span class="icon">⊟</span> Risk Rules
+      </a>
+      <a class="nav-item" href="#">
+        <span class="icon">⊞</span> Enforcement
+      </a>
+      <a class="nav-item" href="#">
+        <span class="icon">◎</span> Alerts
+        <span class="nav-badge">2</span>
+      </a>
+    </div>
+
+    <div class="nav-section" style="margin-top:12px">
+      <div class="nav-label">Insights</div>
+      <a class="nav-item" href="#">
+        <span class="icon">≋</span> Trade Journal
+      </a>
+      <a class="nav-item" href="#">
+        <span class="icon">◷</span> Analytics
+      </a>
+      <a class="nav-item" href="#">
+        <span class="icon">⊕</span> Psychology
+      </a>
+    </div>
+
+    <div class="nav-section" style="margin-top:12px">
+      <div class="nav-label">Account</div>
+      <a class="nav-item" href="#">
+        <span class="icon">⊙</span> MT5 Connection
+      </a>
+      <a class="nav-item" href="#">
+        <span class="icon">◧</span> Settings
+      </a>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-card">
+        <div class="avatar">AO</div>
+        <div>
+          <div class="user-name">Ade Okafor</div>
+          <div class="user-plan">PRO PLAN</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+Section 5: HTML - Main Content & Dashboard Visuals
+This is the core markup of the dashboard UI.
+
+What it does: * Header: Displays the page title and top-right actions (MT5 connection status, notifications).
+
+Alert & Stats: Shows a dismissible warning banner and the 4 primary statistic cards (Trades, Drawdown, Equity, Win Rate) with visually filling progress bars.
+
+SVGs: Renders the "Equity curve" and the "Risk meter" entirely through hardcoded inline SVG code (paths, gradients, and rotations) rather than external images. This is excellent for performance and scaling.
+
+Grids/Tables: Lays out the "Active risk rules" list, the "Today's trades" HTML table, an empty container for the Heatmap (which is populated via JS), and bottom utility navigation cards.
+
+HTML
+  <main class="main">
+
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub">Monday, 26 May 2025 · London session active</div>
+      </div>
+      <div class="topbar-right">
+        <div class="status-pill">
+          <div class="status-dot"></div>
+          MT5 Connected
+        </div>
+        <div class="icon-btn" title="Notifications">
+          🔔
+          <div class="notif-dot"></div>
+        </div>
+        <div class="icon-btn" title="Settings">⚙</div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <div class="alert-banner" id="alertBanner">
+        <span>⚠</span>
+        <span><strong>Approaching daily trade limit:</strong> 4 of 5 allowed trades taken today. 1 remaining.</span>
+        <span class="alert-close" onclick="document.getElementById('alertBanner').style.display='none'">✕</span>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card warn">
+          <div class="stat-header">
+            <div class="stat-label">Trades today</div>
+            <div class="stat-icon warn">📊</div>
+          </div>
+          <div class="stat-value warn">4 <span style="font-size:15px;color:var(--muted);font-family:var(--font-mono)">/ 5</span></div>
+          <div class="stat-bar-track"><div class="stat-bar-fill warn" style="width:80%"></div></div>
+          <div class="stat-footer"><span>80% of limit used</span><span style="color:var(--warn)">1 left</span></div>
+        </div>
+
+        <div class="stat-card danger">
+          <div class="stat-header">
+            <div class="stat-label">Daily drawdown</div>
+            <div class="stat-icon danger">📉</div>
+          </div>
+          <div class="stat-value danger">-1.4%</div>
+          <div class="stat-bar-track"><div class="stat-bar-fill danger" style="width:70%"></div></div>
+          <div class="stat-footer"><span>Limit: -2.0%</span><span style="color:var(--danger)">0.6% buffer</span></div>
+        </div>
+
+        <div class="stat-card green">
+          <div class="stat-header">
+            <div class="stat-label">Account equity</div>
+            <div class="stat-icon green">💰</div>
+          </div>
+          <div class="stat-value green">$9,860</div>
+          <div class="stat-bar-track"><div class="stat-bar-fill green" style="width:98.6%"></div></div>
+          <div class="stat-footer"><span>Balance: $10,000</span><span style="color:var(--accent)">↑ 0.8% week</span></div>
+        </div>
+
+        <div class="stat-card blue">
+          <div class="stat-header">
+            <div class="stat-label">Win rate (30d)</div>
+            <div class="stat-icon blue">🎯</div>
+          </div>
+          <div class="stat-value blue">62%</div>
+          <div class="stat-bar-track"><div class="stat-bar-fill blue" style="width:62%"></div></div>
+          <div class="stat-footer"><span>R:R avg 1.8</span><span style="color:var(--blue)">↑ from 58%</span></div>
+        </div>
+      </div>
+
+      <div class="cooldown-card">
+        <div class="cooldown-icon">⏱</div>
+        <div class="cooldown-info">
+          <div class="cooldown-title">Cooldown Active — 2 consecutive losses detected</div>
+          <div class="cooldown-desc">Forced 30-minute break to prevent revenge trading. Trading resumes automatically.</div>
+        </div>
+        <div class="cooldown-timer" id="cooldownTimer">18:42</div>
+      </div>
+
       <div class="mid-row">
 
-        <!-- Drawdown chart -->
         <div class="card">
           <div class="card-header">
             <div class="card-title">Equity curve — today</div>
@@ -924,20 +1772,15 @@
                     <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
                   </linearGradient>
                 </defs>
-                <!-- Grid lines -->
                 <line x1="0" y1="30" x2="560" y2="30" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
                 <line x1="0" y1="70" x2="560" y2="70" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
                 <line x1="0" y1="110" x2="560" y2="110" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
-                <!-- Danger line -->
                 <line x1="0" y1="98" x2="560" y2="98" stroke="var(--danger)" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.4"/>
                 <text x="4" y="95" fill="var(--danger)" font-size="9" font-family="IBM Plex Mono" opacity="0.6">-2% limit</text>
-                <!-- Area fill -->
                 <path d="M0,50 L60,45 L120,55 L180,42 L220,60 L260,35 L300,70 L340,85 L380,80 L420,95 L460,88 L520,92 L560,90 L560,140 L0,140 Z"
                       fill="url(#chartGrad)"/>
-                <!-- Line -->
                 <path d="M0,50 L60,45 L120,55 L180,42 L220,60 L260,35 L300,70 L340,85 L380,80 L420,95 L460,88 L520,92 L560,90"
                       fill="none" stroke="var(--accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                <!-- Current dot -->
                 <circle cx="560" cy="90" r="4" fill="var(--accent)"/>
                 <circle cx="560" cy="90" r="8" fill="var(--accent)" opacity="0.2"/>
               </svg>
@@ -948,13 +1791,33 @@
           </div>
         </div>
 
-       
-
-      
-
-      
-          <div class="util-arrow">›</div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Risk status</div>
+            <div class="card-action">Configure →</div>
+          </div>
+          <div class="risk-meter-wrap">
+            <svg class="meter-svg" viewBox="0 0 180 100">
+              <path d="M15,95 A75,75 0 0,1 165,95" fill="none" stroke="var(--bg4)" stroke-width="12" stroke-linecap="round"/>
+              <path d="M15,95 A75,75 0 0,1 55,28" fill="none" stroke="var(--accent)" stroke-width="12" stroke-linecap="round" opacity="0.6"/>
+              <path d="M55,28 A75,75 0 0,1 125,28" fill="none" stroke="var(--warn)" stroke-width="12" stroke-linecap="round" opacity="0.6"/>
+              <path d="M125,28 A75,75 0 0,1 165,95" fill="none" stroke="var(--danger)" stroke-width="12" stroke-linecap="round" opacity="0.6"/>
+              <g transform="translate(90,95) rotate(-28)">
+                <line x1="0" y1="0" x2="0" y2="-60" stroke="var(--warn)" stroke-width="2.5" stroke-linecap="round"/>
+                <circle cx="0" cy="0" r="5" fill="var(--bg3)" stroke="var(--warn)" stroke-width="2"/>
+              </g>
+              <text x="14" y="108" fill="var(--accent)" font-size="9" font-family="IBM Plex Mono">Low</text>
+              <text x="78" y="108" fill="var(--warn)" font-size="9" font-family="IBM Plex Mono">Med</text>
+              <text x="140" y="108" fill="var(--danger)" font-size="9" font-family="IBM Plex Mono">High</text>
+            </svg>
+            <div class="meter-value-wrap">
+              <div class="meter-value">68</div>
+              <div class="meter-label">Risk score</div>
+            </div>
+            <div class="meter-status">⚠ Medium risk — 2 rules near limit</div>
+          </div>
         </div>
+
       </div>
 
     </div><!-- /content -->
